@@ -1,0 +1,48 @@
+
+module binary_to_bcd_encoder(clk,rst,binaryInput,BCDoutput,z,v);
+
+input clk, rst;
+input [17:0] binaryInput;
+
+output reg [37:0] z;
+reg[5:0] temp;
+output reg [20:0] BCDoutput;
+output reg v;
+
+always @(posedge clk or negedge rst) begin
+	if(!rst) begin
+		BCDoutput <= 'b0;
+		z<='b0;
+		temp <= 'b0;
+	end
+	else begin
+		if(binaryInput < 'd100000) begin //positive
+		v<='b0;
+			if(temp == 'b0) begin 
+				z[16:0] <= binaryInput[16:0];
+				z[37:17] <= 'b0;
+			end
+			else begin
+				if(temp > 'd17 ) begin
+					BCDoutput[20:0] <= z[37:17];
+					temp <= 'b0;
+				end
+				else begin
+					if(z[20:17] > 'd4) z[20:17] <= z[20:17] + 'd3;
+					else if(z[24:21]>'d4) z[24:21] <= z[24:21] + 'd3;
+					else if(z[28:25]>'d4) z[28:25] <= z[28:25] + 'd3;
+					else if(z[32:29]>'d4) z[32:29] <= z[32:29] + 'd3;
+					else z<=z<<1;
+					
+					temp <= temp+'b1;
+				end
+			end
+		end
+		else if(binaryInput[17:0] > -18'd10000) begin
+		v<='b0;
+		end
+		else v<='b1;
+
+	end	
+end
+endmodule
